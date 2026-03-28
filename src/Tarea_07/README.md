@@ -1,4 +1,4 @@
-Tarea 07 - Programación Paralela y Concurrente
+#Tarea 07 - Programación Paralela y Concurrente
 
 En esta tarea se desarrollaron diferentes ejercicios relacionados con los temas vistos en clase.
 Cada integrante del equipo resolvió un ejercicio distinto.
