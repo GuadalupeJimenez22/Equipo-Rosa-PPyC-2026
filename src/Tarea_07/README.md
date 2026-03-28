@@ -4,6 +4,7 @@ En esta tarea se desarrollaron diferentes ejercicios relacionados con los temas 
 Cada integrante del equipo resolvió un ejercicio distinto.
 
 # Integrantes y ejercicios
+
 Lázaro → Ejercicio 01
 Israel → Ejercicio 02
 Jorge → Ejercicio 03
