@@ -1,1 +1,0 @@
-["AAPL", "MSFT", "AMZN", "NVDA", "GOOGL", "GOOG", "META", "BRK-B", "TSLA", "UNH", "JPM", "V", "JNJ", "XOM", "MA", "AVGO", "PG", "ORCL", "HD", "CVX", "ADBE", "COST", "PEP", "KO", "ABBV", "BAC", "WMT", "TMO", "CRM", "PFE", "CSCO", "ACN", "ABT", "LIN", "AMD", "DHR", "NFLX", "DIS", "TXN", "PM", "MS", "NEE", "VZ", "RTX", "INTC", "HON", "LOW", "INTU", "COP", "CAT"]
