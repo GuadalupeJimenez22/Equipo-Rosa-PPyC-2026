@@ -1,2 +1,3 @@
 .venv
 *.webp.venv/
+src/expo/data

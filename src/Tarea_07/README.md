@@ -13,7 +13,6 @@ Lupita → Ejercicio 05
 Andrés → Ejercicio 06
 
 # Notas
-Cada ejercicio contiene sus propios archivos y dependencias.
 Se mantuvo una estructura uniforme para facilitar la revisión.
 
 
