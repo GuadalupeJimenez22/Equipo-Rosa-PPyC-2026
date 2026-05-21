@@ -29,3 +29,4 @@ docker compose up
 # ver estado
 docker compose ps
 ```
+
