@@ -21,3 +21,28 @@
     overpopulation: 3
     sleep: 0.15  
     fps: 40 
+
+    rule_string: "B3/S23"
+    automata_presets:
+      - name: "conway"
+        rule: "B3/S23"
+      - name: "highlife"
+        rule: "B36/S23"
+      - name: "seeds"
+        rule: "B2/S"
+      - name: "maze"
+        rule: "B3/S12345"
+      - name: "daynight"
+        rule: "B3678/S34678"
+      - name: "replicator"
+        rule: "B1357/S1357"
+      - name: "morley"
+        rule: "B368/S245"
+      - name: "diamoeba"
+        rule: "B35678/S5678"
+      - name: "2x2"
+        rule: "B36/S125"
+      - name: "34life"
+        rule: "B34/S34"
+      - name: "longlife"
+        rule: "B345/S5"

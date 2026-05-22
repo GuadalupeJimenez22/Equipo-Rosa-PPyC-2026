@@ -9,6 +9,6 @@ playwright==1.58.0
 psycopg2==2.9.11
 SQLAlchemy==2.0.48
 
-numpy==1.24.4
+numpy==1.26.4
 pygame==2.5.2
 PyYAML==6.0.1

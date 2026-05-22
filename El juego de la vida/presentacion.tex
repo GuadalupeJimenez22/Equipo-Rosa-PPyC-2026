@@ -1,0 +1,272 @@
+\documentclass[10pt,aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\definecolor{democolor}{RGB}{0,100,0}
+\newcommand{\demo}[1]{\textcolor{democolor}{\texttt{#1}}}
+
+\title[El Juego de la Vida]{El Juego de la Vida de Conway}
+\subtitle{Programación Paralela y Concurrente -- 2026}
+\author[Equipo Rosa]{
+  L. Guadalupe Jimenez G. \and
+  Lázaro García \and
+  Israel Olvera Juárez \and
+  Jorge F. Zarate D. \and
+  Miguel Ángel Torres P. \and
+  Andrés Soria C.
+}
+\institute[UNAM]{Universidad Nacional Autónoma de México}
+\date{Mayo 2026}
+
+\begin{document}
+
+% ================================================================
+% 1. PORTADA
+% ================================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ================================================================
+% 2. INTRODUCCIÓN -- Lupita
+% ================================================================
+\begin{frame}{¿Qué es el Juego de la Vida?}
+  \textbf{L. Guadalupe Jimenez García}
+
+  \vspace{0.4cm}
+
+  \begin{itemize}
+    \item Creado por \textbf{John Conway} en 1970.
+    \item Un \textbf{autómata celular}: grilla de células que evolucionan
+          solas según reglas simples.
+    \item Con solo 4 reglas emergen patrones sorprendentemente complejos.
+    \item Es \textbf{Turing-completo}: puede hacer cualquier cálculo.
+  \end{itemize}
+
+  \vspace{0.5cm}
+
+  \begin{center}
+    \textbf{Demo en vivo}
+
+    \demo{blinker} \quad \demo{block}
+
+    \small Ejecutar: \texttt{python juego\_vida\_optimo.py}
+  \end{center}
+\end{frame}
+
+% ================================================================
+% 3. STILL LIFES Y OSCILADORES -- Lázaro
+% ================================================================
+\begin{frame}{Patrones que persisten en el tiempo}
+  \textbf{Lázaro García}
+
+  \vspace{0.4cm}
+
+  \begin{block}{Still lifes -- no cambian}
+    \begin{itemize}
+      \item Son estructuras \textbf{estables}: cada célula tiene 2 o 3 vecinos.
+      \item Aparecen naturalmente del caos y funcionan como ``ladrillos''.
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Osciladores -- alternan entre estados}
+    \begin{itemize}
+      \item Ciclan entre 2 o más configuraciones.
+      \item Son los ``relojes'' del Juego de la Vida.
+    \end{itemize}
+  \end{block}
+
+  \vspace{0.3cm}
+
+  \begin{center}
+    \textbf{Demo en vivo}
+
+    \demo{beehive} \quad \demo{loaf} \quad \demo{boat}
+    \quad \demo{toad} \quad \demo{beacon}
+  \end{center}
+\end{frame}
+
+% ================================================================
+% 4. NAVES ESPACIALES -- Israel
+% ================================================================
+\begin{frame}{Patrones que se mueven}
+  \textbf{Israel Olvera Juárez}
+
+  \vspace{0.4cm}
+
+  \begin{itemize}
+    \item Las \textbf{naves espaciales} se desplazan por la grilla
+          recuperando su forma original cada cierto número de pasos.
+    \item El \textbf{glider} es la nave más pequeña: se mueve en diagonal
+          y recorre 1 celda cada 4 generaciones (c/4).
+    \item Las naves \textbf{LWSS, MWSS y HWSS} son ortogonales y viajan
+          al doble de velocidad (c/2).
+  \end{itemize}
+
+  \begin{block}{¿Para qué sirven?}
+    Transmiten \textbf{información} a distancia.
+    El Gosper Glider Gun las usa como ``mensajeras''.
+  \end{block}
+
+  \vspace{0.3cm}
+
+  \begin{center}
+    \textbf{Demo en vivo}
+
+    \demo{glider} \quad \demo{lwss} \quad \demo{mwss} \quad \demo{hwss}
+  \end{center}
+\end{frame}
+
+% ================================================================
+% 5. OSCILADORES COMPLEJOS Y CAÑONES -- Jorge
+% ================================================================
+\begin{frame}{Osciladores grandes y generadores de naves}
+  \textbf{Jorge F. Zarate Domínguez}
+
+  \vspace{0.4cm}
+
+  \begin{itemize}
+    \item El \textbf{pulsar} es uno de los osciladores más icónicos:
+          período 3, 48 células, simetría perfecta.
+    \item El \textbf{pentadecathlon} tiene período 15 y solo 12 células.
+    \item El \textbf{Gosper Glider Gun} fue el primer cañón descubierto
+          (1970). Produce un glider nuevo cada 30 generaciones.
+  \end{itemize}
+
+  \begin{alertblock}{Dato curioso}
+    Conway ofreció \$50 a quien demostrara crecimiento infinito.
+    Bill Gosper lo ganó con este cañón.
+  \end{alertblock}
+
+  \vspace{0.3cm}
+
+  \begin{center}
+    \textbf{Demo en vivo}
+
+    \demo{pulsar} \quad \demo{pentadecathlon} \quad \demo{gosper\_glider\_gun}
+  \end{center}
+\end{frame}
+
+% ================================================================
+% 6. MATUSALENES Y PARALELISMO -- Miguel
+% ================================================================
+\begin{frame}{Matusalenes y el poder del paralelismo}
+  \textbf{Miguel Ángel Torres Pérez}
+
+  \vspace{0.4cm}
+
+  \begin{block}{Matusalenes}
+    \begin{itemize}
+      \item Patrones pequeños que tardan \textbf{miles de generaciones} en estabilizarse.
+      \item \texttt{r\_pentomino}: 5 células $\rightarrow$ 1,103 generaciones $\rightarrow$ 116 células.
+      \item \texttt{diehard}: desaparece completamente tras 130 pasos.
+      \item \texttt{acorn}: 7 células $\rightarrow$ \textbf{5,206 generaciones}.
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{¿Por qué paralelismo?}
+    \begin{itemize}
+      \item La versión \texttt{juego\_vida\_proyecto.py} usa \texttt{multiprocessing}.
+      \item Divide un tablero de \textbf{200×200 celdas} entre todos los núcleos del CPU.
+      \item Cada proceso calcula su franja de filas de forma independiente.
+    \end{itemize}
+  \end{block}
+
+  \vspace{0.2cm}
+
+  \begin{center}
+    \textbf{Demo en vivo}
+
+    \demo{r\_pentomino} \quad \demo{diehard} \quad \demo{acorn}
+
+    \small También: \texttt{python juego\_vida\_proyecto.py}
+  \end{center}
+\end{frame}
+
+% ================================================================
+% 7. REGLAS ALTERNATIVAS -- Andrés
+% ================================================================
+\begin{frame}{Más allá de Conway: mismas células, otras reglas}
+  \textbf{Andrés Soria Cabrera}
+
+  \vspace{0.4cm}
+
+  \begin{itemize}
+    \item Conway usa la regla \textbf{B3/S23}. Pero hay muchas otras.
+    \item Cambiar los números de nacimiento y supervivencia produce
+          \textbf{universos completamente distintos}.
+  \end{itemize}
+
+  \vspace{0.3cm}
+
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+    \begin{block}{HighLife (B36/S23)}
+      \begin{itemize}
+        \item Muy parecido a Conway pero...
+        \item ¡Tiene un \textbf{replicador} natural!
+        \item Un patrón que se copia a sí mismo.
+      \end{itemize}
+    \end{block}
+
+    \column{0.48\textwidth}
+    \begin{block}{Day \& Night (B3678/S34678)}
+      \begin{itemize}
+        \item Es \textbf{simétrico}: si inviertes vivo por muerto,
+              se comporta exactamente igual.
+        \item El día y la noche son indistinguibles.
+      \end{itemize}
+    \end{block}
+  \end{columns}
+
+  \vspace{0.3cm}
+
+  \begin{center}
+    \textbf{Demo en vivo}
+
+    \demo{highlife} \quad \demo{seeds} \quad \demo{daynight}
+
+    \small Probar con el mismo patrón: \texttt{gol.load\_pattern("glider")}
+    \texttt{gol.set\_rule("highlife")}
+  \end{center}
+\end{frame}
+
+% ================================================================
+% 8. CIERRE -- Todos
+% ================================================================
+\begin{frame}{Lo que aprendimos}
+  \textbf{Equipo Rosa}
+
+  \vspace{0.4cm}
+
+  \begin{itemize}
+    \item Con solo \textbf{4 reglas} emerge una complejidad infinita.
+    \item El Juego de la Vida es un \textbf{laboratorio} para explorar:
+          patrones, movimiento, autorreplicación, caos.
+    \item Implementamos \textbf{3 versiones} del mismo algoritmo:
+          interactiva, optimizada y paralela.
+    \item Cada versión enseña algo distinto sobre cómo estructurar
+          y ejecutar código eficientemente.
+    \item Cambiar las reglas (\texttt{automata.py}) abre la puerta
+          a \textbf{infinitos universos} por explorar.
+  \end{itemize}
+
+  \vspace{0.5cm}
+
+  \begin{center}
+    \Large \textbf{¿Preguntas?}
+
+    \vspace{0.3cm}
+    \normalsize
+    Repositorio: \texttt{Equipo-Rosa-PPyC-2026}
+
+    Programación Paralela y Concurrente -- UNAM 2026
+  \end{center}
+\end{frame}
+
+\end{document}
