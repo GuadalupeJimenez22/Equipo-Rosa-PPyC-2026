@@ -31,7 +31,7 @@ La GUI puede usarse como cierre o para mostrar varios patrones seguidos.
 
 ---
 
-## Lupita — Introducción (diapositiva 2)
+— Introducción (diapositiva 2)
 
 **Patrones:** `blinker`, `block`
 
@@ -83,7 +83,7 @@ python juego_vida.py
 
 ---
 
-## Lázaro — Still lifes y osciladores (diapositiva 3)
+— Still lifes y osciladores (diapositiva 3)
 
 **Patrones:** `beehive`, `loaf`, `boat`, `toad`, `beacon`
 
@@ -138,7 +138,7 @@ python juego_vida.py
 
 ---
 
-## Israel Olvera — Naves espaciales (diapositiva 4)
+— Naves espaciales (diapositiva 4)
 
 **Patrones:** `glider`, `lwss`, `mwss`, `hwss`
 
@@ -189,7 +189,7 @@ python juego_vida.py
 
 ---
 
-## Jorge — Osciladores complejos y cañones (diapositiva 5)
+— Osciladores complejos y cañones (diapositiva 5)
 
 **Patrones:** `pulsar`, `pentadecathlon`, `gosper_glider_gun`
 
@@ -241,7 +241,7 @@ python juego_vida.py
 
 ---
 
-## Miguel — Matusalenes y paralelismo (diapositiva 6)
+— Matusalenes y paralelismo (diapositiva 6)
 
 **Patrones:** `r_pentomino`, `diehard`, `acorn`
 
@@ -296,7 +296,7 @@ python juego_vida_proyecto.py
 
 ---
 
-## Andrés — Reglas alternativas (diapositiva 7)
+— Reglas alternativas (diapositiva 7)
 
 **Patrones:** mismo glider con `highlife`, `seeds`, `daynight`
 
@@ -355,25 +355,3 @@ python juego_vida.py
 
 ---
 
-## Resumen rápido de comandos por persona
-
-```bash
-# Lupita
-python -c "from juego_vida_optimo import GameOfLifeOptimo; g=GameOfLifeOptimo(); g.load_pattern('blinker'); [print(sorted(g.get_cells())) or g.run_logic_step() for _ in range(3)]"
-
-# Lázaro
-python -c "from juego_vida_optimo import GameOfLifeOptimo; g=GameOfLifeOptimo(); [g.clear() or g.load_pattern(p) or print(f'{p}:', len(g.get_cells()), 'celulas') for p in ['beehive','loaf','boat','toad','beacon']]"
-
-# Israel Olvera
-python -c "from juego_vida_optimo import GameOfLifeOptimo; g=GameOfLifeOptimo(); g.load_pattern('glider'); [print(sorted(g.get_cells())) or g.run_logic_step() for _ in range(5)]"
-
-# Jorge
-python -c "from juego_vida_optimo import GameOfLifeOptimo; g=GameOfLifeOptimo(); g.load_pattern('gosper_glider_gun'); [g.run_n_steps(30) or print(f'Gen {i*30}:', len(g.get_cells()), 'celulas') for i in range(4)]"
-
-# Miguel
-python -c "from juego_vida_optimo import GameOfLifeOptimo; g=GameOfLifeOptimo(); g.load_pattern('r_pentomino'); g.run_n_steps(100); print('r_pentomino 100 pasos:', len(g.get_cells()), 'celulas')"
-python juego_vida_proyecto.py   # demo paralela
-
-# Andrés
-python -c "from juego_vida_optimo import GameOfLifeOptimo; g=GameOfLifeOptimo(); [g.set_rule(r) or g.load_pattern('glider') or print(f'{r}:', sorted(g.get_cells())) or g.run_n_steps(3) or print(f'  ->', sorted(g.get_cells())) for r in ['B3/S23','B36/S23','B2/S']]"
-```
