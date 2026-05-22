@@ -1,3 +1,4 @@
 .venv
 *.webp.venv/
 src/expo/data
+__pycache__

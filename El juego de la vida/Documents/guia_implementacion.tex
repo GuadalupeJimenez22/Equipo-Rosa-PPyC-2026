@@ -1,0 +1,873 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[table]{xcolor}
+\usepackage{makecell}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\geometry{margin=2.5cm}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\setlength{\parskip}{0.3cm}
+
+\definecolor{codebg}{RGB}{240,240,240}
+\definecolor{codekey}{RGB}{0,0,200}
+\definecolor{codestr}{RGB}{0,130,0}
+\definecolor{codecmt}{RGB}{140,140,140}
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{codekey}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecmt}\itshape,
+  showstringspaces=false,
+  frame=single,
+  framerule=0.5pt,
+  aboveskip=6pt,
+  belowskip=6pt,
+  tabsize=2,
+  breaklines=true,
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Guía de Implementación -- Juego de la Vida}
+\fancyhead[R]{Equipo Rosa -- PPyC 2026}
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+
+% ================================================================
+% PORTADA
+% ================================================================
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+
+  {\Huge \textbf{Guía de Implementación}}
+
+  \vspace{0.5cm}
+  {\Large Juego de la Vida de Conway}
+
+  \vspace{0.3cm}
+  {\large Arquitectura en 3 capas}
+
+  \vspace{1.5cm}
+
+  \begin{tabular}{rl}
+    \textbf{Capa Fundación}      & Israel Olvera Juárez \\
+    \textbf{Capa Refinamiento}   & Miguel Ángel Torres Pérez \\
+    \textbf{Capa Escalabilidad}  & Andrés Soria Cabrera \\
+  \end{tabular}
+
+  \vspace{2cm}
+
+  {\large Programación Paralela y Concurrente}
+
+  {\large Universidad Nacional Autónoma de México}
+
+  \vspace{0.3cm}
+  {\large Mayo 2026}
+
+  \vspace{0.5cm}
+
+  \begin{center}
+  \renewcommand{\arraystretch}{2.5}
+  \begin{tabular}{|c|}
+    \hline
+    \cellcolor{green!15}
+    \textbf{\large Fundación}  \\
+    \cellcolor{green!15}
+    Israel Olvera Juárez  \\
+    \cellcolor{green!15}
+    \texttt{juego\_vida.py} \\
+    \hline
+    \multicolumn{1}{c}{$\big\downarrow$} \\
+    \hline
+    \cellcolor{yellow!15}
+    \textbf{\large Refinamiento} \\
+    \cellcolor{yellow!15}
+    Miguel Ángel Torres Pérez \\
+    \cellcolor{yellow!15}
+    \texttt{juego\_vida\_optimo.py} \\
+    \hline
+    \multicolumn{1}{c}{$\big\downarrow$} \\
+    \hline
+    \cellcolor{red!15}
+    \textbf{\large Escalabilidad} \\
+    \cellcolor{red!15}
+    Andrés Soria Cabrera \\
+    \cellcolor{red!15}
+    \texttt{juego\_vida\_proyecto.py} \\
+    \hline
+  \end{tabular}
+  \end{center}
+\end{titlepage}
+
+\newpage
+
+% ================================================================
+% SECCIÓN 0: VISIÓN GENERAL
+% ================================================================
+\section{Visión general de la arquitectura}
+
+\subsection{Las 3 capas}
+
+El proyecto está organizado en tres capas que se construyen una sobre otra:
+
+\begin{center}
+\renewcommand{\arraystretch}{2.2}
+\begin{tabular}{ccl}
+  \cellcolor{green!15}
+  \begin{minipage}{4cm}\centering
+    \textbf{Capa 1: Fundación} \\
+    \texttt{juego\_vida.py}
+  \end{minipage}
+  &
+  $\rightarrow$
+  &
+  \begin{minipage}{5cm}\raggedright\footnotesize
+    GUI Pygame, Set[Cell], \\
+    vecindario de Moore, \\
+    algoritmo de 2 pasadas
+  \end{minipage}
+  \\
+  \cellcolor{yellow!15}
+  \begin{minipage}{4cm}\centering
+    \textbf{Capa 2: Refinamiento} \\
+    \texttt{juego\_vida\_optimo.py}
+  \end{minipage}
+  &
+  $\rightarrow$
+  &
+  \begin{minipage}{5cm}\raggedright\footnotesize
+    Métodos puros, API programable, \\
+    catálogo de 21 patrones, \\
+    serialización YAML
+  \end{minipage}
+  \\
+  \cellcolor{red!15}
+  \begin{minipage}{4cm}\centering
+    \textbf{Capa 3: Escalabilidad} \\
+    \texttt{juego\_vida\_proyecto.py}
+  \end{minipage}
+  &
+  $\rightarrow$
+  &
+  \begin{minipage}{5cm}\raggedright\footnotesize
+    Multiprocessing, Pool.map, \\
+    11 reglas B/S configurables, \\
+    cámara y renderizado
+  \end{minipage}
+  \\
+\end{tabular}
+\end{center}
+
+\subsection{Archivos del proyecto}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llp{6cm}}
+\toprule
+\textbf{Archivo} & \textbf{Tipo} & \textbf{Propósito} \\
+\midrule
+\texttt{config.yml}       & Compartido & Dimensiones de grilla, colores, regla por defecto \\
+\texttt{requirements.txt} & Compartido & Dependencias (pygame, numpy, PyYAML, scipy, etc.) \\
+\texttt{seed\_patterns.yml} & Fundación & 9 patrones en matriz binaria (teclas 1--9) \\
+\texttt{juego\_vida.py}     & Fundación & Implementación base con GUI Pygame \\
+\texttt{patterns.py}        & Refinamiento & Catálogo de 21 patrones + funciones de serialización \\
+\texttt{juego\_vida\_optimo.py} & Refinamiento & Núcleo algorítmico puro, sin GUI \\
+\texttt{automata.py}        & Escalabilidad & Motor de reglas B/S con 11 presets \\
+\texttt{juego\_vida\_proyecto.py} & Escalabilidad & Versión paralela con multiprocessing \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Configuración central: \texttt{config.yml}}
+
+Todas las implementaciones leen este archivo. Los campos principales son:
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{p{4.5cm}p{2cm}p{7cm}}
+\toprule
+\textbf{Campo} & \textbf{Valor} & \textbf{Descripción} \\
+\midrule
+\texttt{width / height} & 800 & Tamaño de ventana en píxeles \\
+\texttt{cell\_size}      & 16  & Píxeles por célula ($50\times50$ celdas) \\
+\texttt{grid\_is\_infinite} & True & Wrapping toroidal con operador \% \\
+\texttt{rule\_string}    & B3/S23 & Regla de autómata por defecto \\
+\texttt{sleep}           & 0.15 & Segundos entre generaciones (solo v1) \\
+\texttt{fps}             & 40   & Fotogramas por segundo \\
+\makecell[l]{\texttt{reproduction}\\ \texttt{underpopulation}\\ \texttt{overpopulation}} & 3/2/3 & B3/S23 clásico (legado) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Dependencias entre módulos}
+
+\begin{verbatim}
+config.yml  <── leído por los 3 .py
+     │
+     ├── automata.py ──── (sin dependencias del proyecto)
+     │      │
+     └── patterns.py ──── (sin dependencias del proyecto)
+            │
+     ┌──────┴───────────────┬──────────────────────┐
+     │                      │                      │
+juego_vida.py        juego_vida_optimo.py    juego_vida_proyecto.py
+(GUI Pygame)         (headless)              (multiprocessing)
+\end{verbatim}
+
+\subsection{Tipo común}
+
+El tipo \texttt{Cell = Tuple[int, int]} representa una coordenada \texttt{(columna, fila)}
+en la grilla. Aparece en \texttt{patterns.py} y es usado por todas las implementaciones.
+
+\newpage
+
+% ================================================================
+% SECCIÓN 1: FUNDACIÓN
+% ================================================================
+\section{Capa Fundación -- Israel Olvera Juárez}
+
+\subsection{Archivos asignados}
+
+\begin{itemize}
+  \item \texttt{juego\_vida.py} -- implementación base con GUI Pygame (259 líneas)
+  \item \texttt{seed\_patterns.yml} -- 9 patrones en formato de matriz binaria
+\end{itemize}
+
+\subsection{Clase GameOfLife}
+
+La clase \texttt{GameOfLife} contiene toda la lógica del juego y el renderizado.
+
+\subsubsection{Constructor}
+
+\begin{lstlisting}
+def __init__(self) -> None:
+    self._config = self._get_config()      # lee config.yml
+    self._n_cols = 800 // 16               # = 50 columnas
+    self._n_rows = 800 // 16               # = 50 filas
+    self._living_cells: Set[Cell] = set()  # conjunto disperso
+    self._is_paused = True                 # empieza en pausa
+    self._rule = get_rule("B3/S23")        # regla de Conway
+\end{lstlisting}
+
+\subsubsection{La decisión de diseño más importante: \texttt{Set[Cell]}}
+
+En vez de una matriz 2D de 50$\times$50 = 2,500 celdas, solo se almacenan
+las coordenadas de las células \textbf{vivas}. Esto hace que:
+
+\begin{itemize}
+  \item El paso de simulación sea $O(\text{vivas} + \text{vecinas})$ en vez de $O(50 \times 50)$
+  \item En grillas dispersas (pocas células) sea extremadamente rápido
+  \item La memoria usada sea mínima
+\end{itemize}
+
+Una célula viva en la columna 5, fila 10 es simplemente la tupla \texttt{(5, 10)}.
+Una célula muerta \textbf{no se almacena}; se asume muerta si no está en el conjunto.
+
+\subsubsection{Algoritmo de 2 pasadas -- \texttt{run\_logic()}}
+
+Este es el corazón del juego. Cada generación se calcula en dos pasos:
+
+\begin{enumerate}
+  \item \textbf{Paso 1 -- Supervivencia}: para cada célula viva, contar sus 8 vecinos.
+        Si \texttt{should\_survive(vecinos)} es True, se mantiene viva.
+        Además, se recolectan todos los vecinos de células vivas en \texttt{all\_neighbors}.
+
+  \item \textbf{Paso 2 -- Reproducción}: para cada vecino de una célula viva que esté
+        \textbf{muerto}, contar sus vecinos. Si \texttt{should\_reproduce(vecinos)} es True, nace.
+\end{enumerate}
+
+\begin{lstlisting}
+def run_logic(self) -> None:
+    new_living_cells = set()
+    all_neighbors = set()
+
+    # Paso 1: supervivencia
+    for cell in self._living_cells:
+        n = self._count_living_neighbors(cell)
+        if self._should_cell_survive(n):
+            new_living_cells.add(cell)
+        all_neighbors.update(self._get_neighbors(cell))
+
+    # Paso 2: reproducción
+    for cell in all_neighbors:
+        if cell not in self._living_cells:
+            n = self._count_living_neighbors(cell)
+            if self._should_cell_reproduce(n):
+                new_living_cells.add(cell)
+
+    self._living_cells = new_living_cells
+\end{lstlisting}
+
+\subsubsection{Vecindario de Moore con wrapping}
+
+Cada célula tiene 8 vecinos (horizontal, vertical y diagonal). Con \texttt{grid\_is\_infinite = True},
+los bordes se envuelven usando el operador módulo (\texttt{\%}), creando una grilla toroidal.
+
+\begin{lstlisting}
+def _get_neighbors(self, cell: Cell) -> List[Cell]:
+    col, row = cell
+    neighbors = []
+    for dc in [-1, 0, 1]:
+        for dr in [-1, 0, 1]:
+            if dc == 0 and dr == 0:
+                continue
+            nc = (col + dc) % self._n_cols    # wrapping
+            nr = (row + dr) % self._n_rows
+            neighbors.append((nc, nr))
+    return neighbors
+\end{lstlisting}
+
+\subsubsection{Controles de usuario}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Tecla / Acción} & \textbf{Método} & \textbf{Efecto} \\
+\midrule
+Espacio        & --                 & Pausar / reanudar simulación \\
+Flecha derecha & --                 & Avanzar 1 solo paso (en pausa) \\
+C              & \texttt{clear()}   & Limpiar todas las células \\
+G / 0          & \texttt{\_generate\_random\_init\_grid()} & Grilla aleatoria (5\%--20\% densidad) \\
+1--9           & \texttt{\_generate\_pattern\_from\_catalog()} & Cargar patrón del catálogo \\
+P              & \texttt{\_print\_catalog()} & Imprimir catálogo en consola \\
+R              & \texttt{\_cycle\_rule()} & Cambiar regla de autómata \\
+S              & \texttt{\_save\_current\_pattern()} & Guardar patrón a YAML \\
+Click mouse    & --                 & Alternar célula viva/muerta \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{\texttt{seed\_patterns.yml}}
+
+Contiene 9 patrones (blinker, glider, lwss, pulsar, gosper\_glider\_gun, toad, beacon,
+r\_pentomino, diehard) en formato de matriz binaria. Cada patrón tiene un ID numérico
+que corresponde a la tecla que lo carga.
+
+Ejemplo del formato:
+\begin{lstlisting}
+- patterns:
+    1:
+      name: "blinker"
+      matrix: [[0,1,0], [0,1,0], [0,1,0]]
+\end{lstlisting}
+
+La función \texttt{\_generate\_pattern\_from\_catalog(id\_)} busca el nombre del patrón
+en un diccionario (\texttt{\_PATTERN\_KEY\_MAP}) y lo carga del catálogo de \texttt{patterns.py}.
+
+\subsection{Puntos para exponer}
+
+\begin{enumerate}
+  \item \textbf{La representación Set[Cell]}: explicar por qué es más eficiente que una matriz.
+        Solo guardamos lo que está vivo. Una grilla de 50$\times$50 con 10\% de densidad
+        almacena solo 250 tuplas en vez de 2,500 enteros.
+  \item \textbf{El algoritmo de 2 pasadas}: primero decidimos qué células vivas sobreviven,
+        luego qué células muertas nacen. Es simple pero poderoso.
+  \item \textbf{El vecindario de Moore}: 8 vecinos, y con wrapping los bordes no existen.
+        La grilla es un toroide.
+  \item \textbf{Demostrar en vivo}: ejecutar \texttt{python juego\_vida.py}, cargar el
+        blinker con la tecla 1, ver la oscilación.
+  \item \textbf{El seed\_patterns.yml}: cómo las matrices binarias se convierten en
+        conjuntos de coordenadas y se centran en la grilla.
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% SECCIÓN 2: REFINAMIENTO
+% ================================================================
+\section{Capa Refinamiento -- Miguel Ángel Torres Pérez}
+
+\subsection{Archivos asignados}
+
+\begin{itemize}
+  \item \texttt{juego\_vida\_optimo.py} -- núcleo algorítmico puro, headless (203 líneas)
+  \item \texttt{patterns.py} -- catálogo de 21 patrones + serialización YAML (259 líneas)
+\end{itemize}
+
+\subsection{Clase GameOfLifeOptimo}
+
+Toma la lógica de \texttt{GameOfLife} y la refactoriza para que sea más limpia,
+testeable y extensible. Las diferencias clave:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Aspecto} & \textbf{v1 (juego\_vida.py)} & \textbf{v2 (optimo.py)} \\
+\midrule
+Líneas de código         & 259 & 203 \\
+Dependencias             & pygame, numpy, yaml & Solo yaml \\
+GUI                     & Sí (800$\times$800) & No (headless) \\
+Métodos puros           & 2 (parcial) & 4 (completos) \\
+Manejo de patrones      & 9 patrones, código repetido & 21 patrones, API unificada \\
+Reglas de autómata      & 1 (Conway) & 11 (todas) \\
+API pública             & Solo process\_events/run\_logic/draw & 10 métodos programables \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Métodos puros}
+
+Un método puro es aquel que:
+\begin{itemize}
+  \item No modifica el estado del objeto (sin efectos secundarios)
+  \item Solo depende de sus parámetros de entrada
+  \item Es \textbf{thread-safe}: puede ejecutarse en paralelo sin locks
+\end{itemize}
+
+\begin{lstlisting}
+def _count_living_neighbors(self, cell: Cell) -> int:
+    """MÉTODO PURO: Sin efectos secundarios, thread-safe."""
+    return sum(1 for n in self._get_neighbors(cell)
+               if n in self._living_cells)
+
+def _should_cell_survive(self, n: int) -> bool:
+    """MÉTODO PURO: Encapsula reglas de supervivencia."""
+    return self._rule.should_survive(n)
+
+def _should_cell_reproduce(self, n: int) -> bool:
+    """MÉTODO PURO: Encapsula reglas de reproducción."""
+    return self._rule.should_reproduce(n)
+\end{lstlisting}
+
+\subsubsection{API programable}
+
+A diferencia de la versión base (que solo se controla con teclas y mouse),
+\texttt{GameOfLifeOptimo} expone una API que permite controlar todo desde código:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Método} & \textbf{Uso} \\
+\midrule
+\texttt{load\_pattern("glider")}  & Carga y centra un patrón del catálogo \\
+\texttt{run\_logic\_step()}       & Ejecuta 1 generación \\
+\texttt{run\_n\_steps(500)}       & Ejecuta N generaciones \\
+\texttt{set\_cells(cells)}        & Establece directamente las células vivas \\
+\texttt{get\_cells()}             & Retorna el estado actual \\
+\texttt{clear()}                  & Vacía la grilla \\
+\texttt{set\_rule("highlife")}    & Cambia la regla de autómata \\
+\texttt{list\_pattern\_names()}   & Lista los 21 patrones disponibles \\
+\texttt{patterns\_by\_type("spaceship")} & Filtra patrones por categoría \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ejemplo de uso:
+\begin{lstlisting}
+g = GameOfLifeOptimo()
+g.load_pattern("r_pentomino")
+g.run_n_steps(100)
+print(f"Células vivas: {len(g.get_cells())}")
+g.set_rule("highlife")         # cambiar regla en caliente
+\end{lstlisting}
+
+\subsection{\texttt{patterns.py} -- Catálogo de patrones}
+
+\subsubsection{Clase Pattern}
+
+\begin{lstlisting}
+@dataclass
+class Pattern:
+    name: str              # "glider"
+    type: str              # "spaceship"
+    cells: Set[Cell]       # {(1,0), (2,1), (0,2), (1,2), (2,2)}
+    period: int | None     # 4
+    description: str       # "La nave más pequeña..."
+    author: str            # "John Conway"
+\end{lstlisting}
+
+Propiedades y métodos clave:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Método / Propiedad} & \textbf{Qué hace} \\
+\midrule
+\texttt{width}, \texttt{height} & Tamaño del bounding box \\
+\texttt{bounds}                 & (min\_col, min\_row, max\_col, max\_row) \\
+\texttt{to\_matrix()}           & Convierte Set[Cell] $\to$ matriz binaria normalizada \\
+\texttt{centered(n\_cols, n\_rows)} & Centra el patrón en una grilla \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Catálogo completo (21 patrones)}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llp{6cm}}
+\toprule
+\textbf{Categoría} & \textbf{Cant.} & \textbf{Patrones} \\
+\midrule
+Still life    & 7 & block, beehive, loaf, boat, tub, ship, pond \\
+Oscilador     & 6 & blinker, toad, beacon, pulsar, pentadecathlon, queen\_bee \\
+Nave espacial & 4 & glider, lwss, mwss, hwss \\
+Cañón         & 1 & gosper\_glider\_gun (período 30, 36 células) \\
+Matusalén     & 4 & r\_pentomino, diehard, acorn, b\_heptomino \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Funciones de serialización YAML}
+
+Convierten entre las tres representaciones del proyecto:
+
+\begin{verbatim}
+    Set[Cell]  ←── cells_to_matrix() / matrix_to_cells() ──→  List[List[int]]
+         │                                                         │
+         └──── save_pattern_to_yaml(cells, name, path) ────→  saved_patterns.yml
+         └──── load_patterns_from_yaml(path) ←────────────  saved_patterns.yml
+\end{verbatim}
+
+\begin{lstlisting}
+def cells_to_matrix(cells: Set[Cell]) -> List[List[int]]:
+    """Convierte conjunto disperso a matriz binaria normalizada."""
+    min_c = min(c for c,_ in cells)
+    min_r = min(r for _,r in cells)
+    w = max(c for c,_ in cells) - min_c + 1
+    h = max(r for _,r in cells) - min_r + 1
+    matrix = [[0] * w for _ in range(h)]
+    for c, r in cells:
+        matrix[r - min_r][c - min_c] = 1
+    return matrix
+
+def save_pattern_to_yaml(cells, name, filepath):
+    """Guarda un patrón a YAML con ID autoincremental."""
+    matrix = cells_to_matrix(cells)
+    data = load_existing_yaml(filepath)
+    next_id = max(data['patterns'].keys()) + 1
+    data['patterns'][next_id] = {'name': name, 'matrix': matrix}
+    yaml.dump(data, open(filepath, 'w'))
+\end{lstlisting}
+
+\subsection{Métricas de mejora}
+
+\begin{itemize}
+  \item \textbf{-31\% líneas} de código (259 $\to$ 203)
+  \item \textbf{-75\% dependencias} externas (3 $\to$ 1)
+  \item \textbf{+100\% métodos puros} (2 $\to$ 4)
+  \item \textbf{+144\% patrones} soportados (9 $\to$ 21)
+  \item \textbf{+1000\% reglas} de autómata (1 $\to$ 11)
+\end{itemize}
+
+\subsection{Puntos para exponer}
+
+\begin{enumerate}
+  \item \textbf{Métodos puros}: qué son y por qué son el primer paso hacia
+        el paralelismo. Un método sin efectos secundarios puede ejecutarse
+        en cualquier orden, en cualquier hilo.
+  \item \textbf{API programable}: la versión base solo se usa con teclas.
+        La versión refinada se puede controlar desde scripts, tests y otras
+        aplicaciones.
+  \item \textbf{El catálogo de patrones}: 21 patrones con metadatos.
+        Cada patrón sabe su tamaño, su período, su autor. Demo: cargar
+        un glider, un pulsar, un gosper\_glider\_gun.
+  \item \textbf{Serialización YAML}: cómo un patrón dibujado con el mouse
+        puede guardarse a disco y cargarse después. El flujo completo:
+        Set[Cell] $\to$ matriz $\to$ YAML $\to$ disco.
+  \item \textbf{Métricas}: mostrar la tabla de mejora. Menos código,
+        más funcionalidad.
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% SECCIÓN 3: ESCALABILIDAD
+% ================================================================
+\section{Capa Escalabilidad -- Andrés Soria Cabrera}
+
+\subsection{Archivos asignados}
+
+\begin{itemize}
+  \item \texttt{juego\_vida\_proyecto.py} -- versión paralela con multiprocessing (210 líneas)
+  \item \texttt{automata.py} -- motor de 11 reglas de autómata configurables (65 líneas)
+\end{itemize}
+
+\subsection{\texttt{juego\_vida\_proyecto.py} -- Motor paralelo}
+
+\subsubsection{¿Por qué funciones sueltas y no una clase?}
+
+Python requiere que las funciones enviadas a otros procesos vía \texttt{multiprocessing}
+sean \textbf{serializables con pickle}. Las funciones definidas a nivel de módulo
+(no como métodos de clase) cumplen este requisito. Por eso \texttt{calcular\_segmento}
+y \texttt{contar\_vecinos} son funciones globales.
+
+\subsubsection{Conversión Set $\leftrightarrow$ Grid}
+
+La versión paralela usa una matriz densa \texttt{List[List[int]]} de 200$\times$200
+en vez de \texttt{Set[Cell]}. Las funciones de conversión son:
+
+\begin{lstlisting}
+def cells_set_to_grid(cells, filas, cols, offset_col=0, offset_row=0):
+    """Set[Cell] -> matriz 2D con offset opcional."""
+    tablero = [[0]*cols for _ in range(filas)]
+    for c, r in cells:
+        if 0 <= r+offset_row < filas and 0 <= c+offset_col < cols:
+            tablero[r+offset_row][c+offset_col] = 1
+    return tablero
+
+def grid_to_cells_set(tablero):
+    """Matriz 2D -> Set[Cell] (para guardar a YAML)."""
+    cells = set()
+    for r, row in enumerate(tablero):
+        for c, val in enumerate(row):
+            if val: cells.add((c, r))
+    return cells
+\end{lstlisting}
+
+\subsubsection{El worker: \texttt{calcular\_segmento()}}
+
+Esta función es el núcleo del paralelismo. Cada proceso trabajador recibe
+una \textbf{franja de filas} y calcula la siguiente generación para esa franja.
+
+\begin{lstlisting}
+def calcular_segmento(args):
+    """Worker de multiprocessing. Calcula una franja de filas."""
+    tablero, fila_inicio, fila_fin, filas_tot, cols_tot, born, survive = args
+    segmento_nuevo = []
+
+    for fila in range(fila_inicio, fila_fin):
+        nueva_fila = []
+        for col in range(cols_tot):
+            vecinos = contar_vecinos(tablero, col, fila, filas_tot, cols_tot)
+            estado_actual = tablero[fila][col]
+
+            # Reglas de Conway con born/survive dinámicos
+            if estado_actual == 1 and vecinos not in survive:
+                nueva_fila.append(0)      # muere
+            elif estado_actual == 0 and vecinos in born:
+                nueva_fila.append(1)      # nace
+            else:
+                nueva_fila.append(estado_actual)  # no cambia
+
+        segmento_nuevo.append(nueva_fila)
+
+    return fila_inicio, fila_fin, segmento_nuevo
+\end{lstlisting}
+
+\textbf{Datos clave del worker:}
+\begin{itemize}
+  \item Recibe \texttt{born} y \texttt{survive} como sets de enteros $\to$ reglas dinámicas
+  \item Solo lee el tablero actual (nunca lo modifica) $\to$ sin condiciones de carrera
+  \item Escribe exclusivamente en su propio \texttt{segmento\_nuevo} $\to$ sin conflicto
+  \item Usa \texttt{contar\_vecinos()} con wrapping toroidal siempre activo
+\end{itemize}
+
+\subsubsection{Pool.map() y descomposición por filas}
+
+El trabajo se divide en franjas horizontales, una por núcleo de CPU:
+
+\begin{lstlisting}
+num_procesos = os.cpu_count() - 1     # Ej: 7 procesos en CPU de 8 núcleos
+pool = mp.Pool(processes=num_procesos)
+
+filas_por_proc = 200 // num_procesos  # Ej: 200/7 = 28 filas por proceso
+tareas = []
+for i in range(num_procesos):
+    inicio = i * filas_por_proc
+    fin = 200 if i == num_procesos-1 else (i+1) * filas_por_proc
+    tareas.append((tablero, inicio, fin, 200, 200, rule.born, rule.survive))
+
+# EJECUCIÓN PARALELA
+resultados = pool.map(calcular_segmento, tareas)
+
+# REENSAMBLADO
+nuevo_tablero = crear_tablero_vacio()
+for inicio, fin, segmento in resultados:
+    nuevo_tablero[inicio:fin] = segmento
+tablero = nuevo_tablero
+\end{lstlisting}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7,
+  strip/.style={rectangle,draw,fill=blue!10,text width=2cm,text centered,rounded corners,font=\tiny}]
+  \draw (0,0) rectangle (6,4);
+  \node at (3,4.3) {Tablero 200$\times$200};
+
+  \node[strip,fill=red!15] at (3,0.5) {CPU 0: filas 0--49};
+  \node[strip,fill=green!15] at (3,1.5) {CPU 1: filas 50--99};
+  \node[strip,fill=yellow!15] at (3,2.5) {CPU 2: filas 100--149};
+  \node[strip,fill=blue!15] at (3,3.5) {CPU 3: filas 150--199};
+
+  \draw[->,>=latex,thick] (6.5,2) -- (7.5,2) node[midway,above] {\tiny Pool.map};
+  \draw (7.5,0) rectangle (9.5,4);
+  \node at (8.5,4.3) {Nuevo tablero};
+\end{tikzpicture}
+\end{center}
+
+\subsubsection{Cámara y renderizado}
+
+\begin{itemize}
+  \item \textbf{Zoom}: rueda del mouse, 4px -- 60px por célula
+  \item \textbf{Paneo}: teclas WASD o flechas
+  \item \textbf{Renderizado selectivo}: solo se dibujan las celdas visibles
+  \item \textbf{Grilla}: se oculta con zoom $\leq$ 5px por rendimiento
+  \item \textbf{Pintado}: click izq = vivir, click der = matar (solo en pausa)
+  \item Las coordenadas del mouse se ajustan por cámara y zoom
+\end{itemize}
+
+\subsection{\texttt{automata.py} -- Motor de reglas}
+
+\subsubsection{Clase AutomataRule}
+
+\begin{lstlisting}
+@dataclass
+class AutomataRule:
+    born: Set[int]       # Ej: {3} para Conway
+    survive: Set[int]    # Ej: {2, 3} para Conway
+    name: str            # "Conway's Life"
+
+    def should_survive(self, n: int) -> bool:
+        return n in self.survive
+
+    def should_reproduce(self, n: int) -> bool:
+        return n in self.born
+
+    @property
+    def rule_string(self) -> str:
+        return f"B{born}/S{survive}"   # "B3/S23"
+\end{lstlisting}
+
+\subsubsection{11 presets}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llp{6cm}}
+\toprule
+\textbf{Preset} & \textbf{Regla} & \textbf{Comportamiento} \\
+\midrule
+conway     & B3/S23      & Clásico de Conway: gliders, osciladores, cañones \\
+highlife   & B36/S23     & Parecido a Conway pero con replicador natural \\
+seeds      & B2/S        & Todo es caótico, los patrones mueren rápido \\
+maze       & B3/S12345   & Genera estructuras tipo laberinto \\
+daynight   & B3678/S34678& Simétrico: invertir vivo/muerto da igual \\
+replicator & B1357/S1357 & Patrones que se copian a sí mismos \\
+morley     & B368/S245   & Naves de alta velocidad y explosiones \\
+diamoeba   & B35678/S5678& Formas ameboides que se expanden \\
+2x2        & B36/S125    & Dominado por bloques 2$\times$2 \\
+34life     & B34/S34     & Explosivo e impredecible \\
+longlife   & B345/S5     & Estructuras que persisten mucho tiempo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Parser de notación B/S}
+
+\begin{lstlisting}
+def parse_rule(rule_string: str) -> AutomataRule:
+    """'B3/S23' -> AutomataRule(born={3}, survive={2,3})"""
+    parts = rule_string.upper().split("/")
+    born = set()
+    survive = set()
+    for part in parts:
+        if part.startswith("B"): born = {int(d) for d in part[1:]}
+        if part.startswith("S"): survive = {int(d) for d in part[1:]}
+    return AutomataRule(born, survive)
+
+def get_rule(name_or_string: str) -> AutomataRule:
+    """Busca en PRESETS; si no, parsea como regla personalizada."""
+    if name_or_string in PRESETS:
+        return PRESETS[name_or_string]
+    return parse_rule(name_or_string)
+\end{lstlisting}
+
+\subsection{Puntos para exponer}
+
+\begin{enumerate}
+  \item \textbf{Paralelismo de datos}: el tablero se divide en franjas de filas.
+        Cada CPU calcula su franja sin comunicarse con las demás. Al final se reensambla.
+        Es el mismo algoritmo, pero distribuido.
+  \item \textbf{¿Por qué funciona?}: cada generación depende solo de la generación
+        anterior. No hay dependencia entre franjas durante el cálculo. Cada worker
+        solo lee el tablero completo y escribe en su propio segmento.
+  \item \textbf{Las reglas no son fijas}: el worker recibe \texttt{born} y \texttt{survive}
+        como parámetros. Cambiar de Conway a HighLife es instantáneo.
+  \item \textbf{11 universos distintos}: mismo patrón, diferentes reglas = comportamientos
+        radicalmente distintos. Demo: glider con Conway $\to$ se mueve; con Seeds $\to$ muere;
+        con Day\&Night $\to$ algo completamente diferente.
+  \item \textbf{Cámara y zoom}: la grilla real es de 200$\times$200, pero la pantalla
+        es de 800$\times$800. La cámara permite explorar el tablero virtual.
+\end{enumerate}
+
+\newpage
+
+% ================================================================
+% APÉNDICE
+% ================================================================
+\section{Apéndice: referencia rápida de comandos}
+
+\subsection{Ejecutar cada versión}
+
+\begin{verbatim}
+# Versión base (GUI)
+python juego_vida.py
+
+# Versión optimizada (demo automática)
+python juego_vida_optimo.py
+
+# Versión paralela (GUI con cámara)
+python juego_vida_proyecto.py
+\end{verbatim}
+
+\subsection{Cargar patrones desde código}
+
+\begin{verbatim}
+from juego_vida_optimo import GameOfLifeOptimo
+g = GameOfLifeOptimo()
+
+# Patrones disponibles
+g.list_pattern_names()
+
+# Cargar y ejecutar
+g.load_pattern("glider")
+g.run_n_steps(10)
+print(g.get_cells())
+
+# Cambiar regla
+g.set_rule("highlife")
+g.load_pattern("r_pentomino")
+g.run_n_steps(500)
+\end{verbatim}
+
+\subsection{Controles unificados (versiones GUI)}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Tecla} & \textbf{Acción} \\
+\midrule
+Espacio   & Pausar / reanudar \\
+C         & Limpiar grilla \\
+1--9      & Cargar patrón precargado \\
+P         & Imprimir catálogo en consola \\
+R         & Cambiar regla de autómata \\
+S         & Guardar patrón actual a YAML \\
+Click     & Pintar / borrar célula \\
+Rueda     & Zoom (solo v3) \\
+WASD      & Mover cámara (solo v3) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

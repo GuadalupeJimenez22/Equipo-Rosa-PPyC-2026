@@ -36,7 +36,6 @@
 % 2. INTRODUCCIÓN -- Lupita
 % ================================================================
 \begin{frame}{¿Qué es el Juego de la Vida?}
-  \textbf{L. Guadalupe Jimenez García}
 
   \vspace{0.4cm}
 
@@ -60,10 +59,37 @@
 \end{frame}
 
 % ================================================================
-% 3. STILL LIFES Y OSCILADORES -- Lázaro
+% REGLAS DEL JUEGO
+% ================================================================
+\begin{frame}{Las 4 reglas de Conway}
+
+\begin{center}
+\Large Toda la simulación surge de solo 4 reglas
+\end{center}
+
+\vspace{0.4cm}
+
+\begin{block}{Reglas}
+\begin{enumerate}
+    \item Una célula viva con menos de 2 vecinos muere.
+    \item Una célula viva con 2 o 3 vecinos sobrevive.
+    \item Una célula viva con más de 3 vecinos muere.
+    \item Una célula muerta con exactamente 3 vecinos nace.
+\end{enumerate}
+\end{block}
+
+\vspace{0.4cm}
+
+\begin{alertblock}{Idea importante}
+Comportamientos extremadamente complejos emergen
+a partir de reglas extremadamente simples.
+\end{alertblock}
+
+\end{frame}
+% ================================================================
+% 4. STILL LIFES Y OSCILADORES -- Lázaro
 % ================================================================
 \begin{frame}{Patrones que persisten en el tiempo}
-  \textbf{Lázaro García}
 
   \vspace{0.4cm}
 
@@ -92,10 +118,9 @@
 \end{frame}
 
 % ================================================================
-% 4. NAVES ESPACIALES -- Israel
+% . NAVES ESPACIALES -- Israel
 % ================================================================
 \begin{frame}{Patrones que se mueven}
-  \textbf{Israel Olvera Juárez}
 
   \vspace{0.4cm}
 
@@ -126,7 +151,6 @@
 % 5. OSCILADORES COMPLEJOS Y CAÑONES -- Jorge
 % ================================================================
 \begin{frame}{Osciladores grandes y generadores de naves}
-  \textbf{Jorge F. Zarate Domínguez}
 
   \vspace{0.4cm}
 
@@ -156,7 +180,6 @@
 % 6. MATUSALENES Y PARALELISMO -- Miguel
 % ================================================================
 \begin{frame}{Matusalenes y el poder del paralelismo}
-  \textbf{Miguel Ángel Torres Pérez}
 
   \vspace{0.4cm}
 
@@ -192,7 +215,6 @@
 % 7. REGLAS ALTERNATIVAS -- Andrés
 % ================================================================
 \begin{frame}{Más allá de Conway: mismas células, otras reglas}
-  \textbf{Andrés Soria Cabrera}
 
   \vspace{0.4cm}
 
@@ -235,7 +257,27 @@
     \texttt{gol.set\_rule("highlife")}
   \end{center}
 \end{frame}
+% ================================================================
+% APLICACIONES
+% ================================================================
+\begin{frame}{Aplicaciones reales}
 
+\begin{itemize}
+    \item Simulación de sistemas biológicos.
+    \item Modelado de propagación de epidemias.
+    \item Redes complejas y tráfico.
+    \item Computación distribuida.
+    \item Inteligencia artificial y sistemas emergentes.
+\end{itemize}
+
+\vspace{0.5cm}
+
+\begin{alertblock}{Idea central}
+El Juego de la Vida demuestra cómo reglas locales simples
+pueden producir comportamientos globales complejos.
+\end{alertblock}
+
+\end{frame}
 % ================================================================
 % 8. CIERRE -- Todos
 % ================================================================
