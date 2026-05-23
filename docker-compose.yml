@@ -2,7 +2,7 @@ services:
 
   postgres-app:
     container_name: Programacion-Paralela-Concurrente-test
-    image: postgres:17
+    image: postgis/postgis:17-3.4
     restart: always
     ports:
       - "5450:5432"   

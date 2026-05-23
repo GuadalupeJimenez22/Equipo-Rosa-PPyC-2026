@@ -5,8 +5,15 @@
 **/resumenes_weekly/
 **/tmp_downloads/
 
+# Ignorar entornos y dependencias locales
+.venv
+*.webp.venv/
+src/expo/data
+node_modules/
+
 # Ignorar archivos del sistema y temporales
 *.DS_Store
 **/.DS_Store
 __pycache__/
+**/__pycache__/**/temp_*.parquet
 *.zip
