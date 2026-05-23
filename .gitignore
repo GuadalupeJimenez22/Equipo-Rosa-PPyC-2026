@@ -1,5 +1,6 @@
 .venv
 *.webp.venv/
 src/expo/data
-__pycache__temp_*.parquet
+__pycache__
+**/__pycache__/**/temp_*.parquet
 node_modules/
