@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UrbanFlow AI - Dashboard Semanal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans antialiased">
+  <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-11 w-11 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xl">🚖</div>
+        <div>
+          <h1 class="text-2xl font-black tracking-tight text-white">UrbanFlow AI</h1>
+          <p class="text-sm text-slate-400">Dashboard de afluencia semanal por plataforma</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+        <a href="#resumen" class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 hover:text-amber-300">KPIs</a>
+        <a href="#mapa" class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 hover:text-amber-300">Mapa</a>
+        <a href="#analisis" class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 hover:text-amber-300">Análisis</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- =======================================================
+         1. RESUMEN EJECUTIVO / KPIs
+    ======================================================== -->
+    <section id="resumen" class="space-y-4">
+      <div class="border-l-4 border-amber-400 pl-4">
+        <h2 class="text-2xl font-black text-white">1. Resumen Ejecutivo</h2>
+        <p class="text-sm text-slate-400 mt-1">
+          Vista rápida de la salud general del sistema con base en los mapas semanales generados.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+          <p class="text-xs uppercase tracking-wide text-slate-500 font-bold">Volumen total de viajes</p>
+          <p id="kpiTotalTrips" class="text-3xl font-black text-white mt-2">—</p>
+          <p class="text-xs text-slate-400 mt-2">Suma global de <code>trip_count</code>.</p>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+          <p class="text-xs uppercase tracking-wide text-slate-500 font-bold">Plataformas activas</p>
+          <p id="kpiDatasets" class="text-3xl font-black text-white mt-2">—</p>
+          <p class="text-xs text-slate-400 mt-2">Yellow, Green, FHV y FHVHV disponibles.</p>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+          <p class="text-xs uppercase tracking-wide text-slate-500 font-bold">Semanas disponibles</p>
+          <p id="kpiWeeks" class="text-3xl font-black text-white mt-2">—</p>
+          <p class="text-xs text-slate-400 mt-2">Combinaciones de año/semana en el manifest.</p>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+          <p class="text-xs uppercase tracking-wide text-slate-500 font-bold">Mapa seleccionado</p>
+          <p id="kpiSelectedTrips" class="text-3xl font-black text-white mt-2">—</p>
+          <p id="kpiSelectedLabel" class="text-xs text-slate-400 mt-2">Selecciona un dataset y semana.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         2. MAPA + FILTROS
+    ======================================================== -->
+    <section id="mapa" class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <aside class="lg:col-span-1 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 h-fit space-y-5">
+        <div>
+          <h2 class="text-lg font-bold text-white">Filtros del mapa</h2>
+          <p class="text-sm text-slate-400 mt-1">
+            Selecciona el origen, año y semana. El dashboard busca el PNG generado por Python.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <label for="mode" class="text-sm font-semibold text-slate-300">Carpeta / modo</label>
+          <select id="mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <option value="test">output_weekly_test</option>
+            <option value="real">output_weekly</option>
+          </select>
+        </div>
+
+        <div class="space-y-2">
+          <label for="dataset" class="text-sm font-semibold text-slate-300">Tipo de transporte</label>
+          <select id="dataset" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <option value="yellow">Yellow Taxi</option>
+            <option value="green">Green Taxi</option>
+            <option value="fhv">For-Hire Vehicle</option>
+            <option value="fhvhv">High Volume FHV</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-2">
+            <label for="year" class="text-sm font-semibold text-slate-300">Año</label>
+            <select id="year" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label for="week" class="text-sm font-semibold text-slate-300">Semana</label>
+            <select id="week" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+          </div>
+        </div>
+
+        <button id="loadBtn" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg px-4 py-2 transition">
+          Cargar mapa
+        </button>
+
+        <button id="openBtn" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg px-4 py-2 transition">
+          Abrir imagen en pestaña
+        </button>
+
+        <div class="border-t border-slate-800 pt-4 space-y-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Ruta esperada</p>
+          <code id="pathPreview" class="block text-xs text-amber-300 bg-slate-950 border border-slate-800 rounded-lg p-3 break-all"></code>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-400 leading-relaxed">
+          <strong class="text-slate-200">Nota:</strong>
+          este HTML no procesa Parquet. Solo visualiza los PNG generados por Python y resume la afluencia disponible.
+        </div>
+      </aside>
+
+      <section class="lg:col-span-3 space-y-5">
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h2 id="mapTitle" class="text-xl font-black text-white">Mapa semanal</h2>
+              <p id="mapSubtitle" class="text-sm text-slate-400 mt-1">Esperando selección...</p>
+            </div>
+            <span id="statusBadge" class="self-start md:self-center text-xs px-3 py-1 rounded-full border border-slate-700 bg-slate-950 text-slate-400">
+              Sin cargar
+            </span>
+          </div>
+
+          <div id="mapContainer" class="bg-black min-h-[520px] flex items-center justify-center">
+            <div id="placeholder" class="text-center p-10">
+              <div class="text-6xl mb-4">🗺️</div>
+              <p class="text-lg font-bold text-white">Selecciona un mapa para visualizarlo</p>
+              <p class="text-sm text-slate-400 mt-2">Usa los filtros y presiona “Cargar mapa”.</p>
+            </div>
+
+            <img id="mapImage" alt="Mapa semanal UrbanFlow AI" class="hidden w-full h-auto object-contain" />
+          </div>
+        </div>
+
+        <div id="errorBox" class="hidden bg-red-950/40 border border-red-800 text-red-100 rounded-2xl p-5">
+          <h3 class="font-bold text-red-200">No se encontró la imagen</h3>
+          <p class="text-sm text-red-100/80 mt-2">
+            Revisa que el archivo exista exactamente en la ruta mostrada.
+          </p>
+          <pre class="mt-3 bg-slate-950 border border-red-900 rounded-lg p-3 overflow-x-auto text-xs"><code>python prueba.py</code></pre>
+        </div>
+      </section>
+    </section>
+
+    <!-- =======================================================
+         3. GRÁFICAS Y GALERÍA
+    ======================================================== -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+        <h3 class="text-lg font-bold text-white">Volumen por plataforma</h3>
+        <p class="text-sm text-slate-400 mt-1">
+          Comparación visual de afluencia acumulada según los mapas disponibles.
+        </p>
+        <div id="datasetBars" class="mt-5 space-y-4"></div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+        <h3 class="text-lg font-bold text-white">Galería rápida de semanas</h3>
+        <p class="text-sm text-slate-400 mt-1">
+          Estos botones intentan cargar la semana seleccionada para el dataset y año actuales.
+        </p>
+        <div id="weekButtons" class="mt-4 flex flex-wrap gap-2"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         4. SECCIONES DE ANÁLISIS DEL DASHBOARD
+    ======================================================== -->
+    <section id="analisis" class="space-y-4">
+      <div class="border-l-4 border-amber-400 pl-4">
+        <h2 class="text-2xl font-black text-white">2. Guía de análisis del dashboard</h2>
+        <p class="text-sm text-slate-400 mt-1">
+          Ideas para interpretar visualmente la información generada por los mapas.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <article class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="text-3xl">🗺️</div>
+          <h3 class="text-lg font-bold text-white">Análisis geoespacial</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Identifica zonas de mayor demanda por plataforma. Las áreas más intensas representan mayor concentración de pickups.
+          </p>
+          <ul class="text-xs text-slate-400 space-y-2 list-disc pl-4">
+            <li>Zonas de mayor demanda por <code>PULocationID</code>.</li>
+            <li>Comparación visual entre Yellow, Green, FHV y FHVHV.</li>
+            <li>Patrones por borough o zona urbana si se cruza con <code>taxi_zones</code>.</li>
+          </ul>
+        </article>
+
+        <article class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="text-3xl">📅</div>
+          <h3 class="text-lg font-bold text-white">Comportamiento temporal</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Permite comparar cómo se mueve la ciudad semana a semana y detectar cambios en la afluencia.
+          </p>
+          <ul class="text-xs text-slate-400 space-y-2 list-disc pl-4">
+            <li>Comparación entre semanas de 2024 y 2025.</li>
+            <li>Posible efecto de temporada, vacaciones o eventos.</li>
+            <li>Base para extender a análisis por hora o fin de semana.</li>
+          </ul>
+        </article>
+
+        <article class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="text-3xl">💰</div>
+          <h3 class="text-lg font-bold text-white">Análisis económico y operación</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Aunque este visor se centra en <code>trip_count</code>, se puede extender a facturación, propinas y distancias.
+          </p>
+          <ul class="text-xs text-slate-400 space-y-2 list-disc pl-4">
+            <li>Facturación total: <code>SUM(total_amount)</code>.</li>
+            <li>Distancia promedio: <code>AVG(trip_distance)</code>.</li>
+            <li>Propina promedio: <code>SUM(tip_amount)/SUM(fare_amount)</code>.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- =======================================================
+         5. TABLA RESUMEN
+    ======================================================== -->
+    <section class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 overflow-x-auto">
+      <h3 class="text-lg font-bold text-white">Resumen de afluencia por plataforma</h3>
+      <p class="text-sm text-slate-400 mt-1">
+        Esta tabla se calcula en el navegador con la información disponible del manifest o con valores estimados si no hay manifest.
+      </p>
+      <table class="w-full text-sm mt-4">
+        <thead class="text-slate-400 border-b border-slate-800">
+          <tr>
+            <th class="text-left py-2">Plataforma</th>
+            <th class="text-right py-2">Pickups acumulados</th>
+            <th class="text-right py-2">Participación</th>
+          </tr>
+        </thead>
+        <tbody id="summaryRows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+    UrbanFlow AI · Dashboard local de mapas PNG
+  </footer>
+
+  <script>
+    const DATASET_NAMES = {
+      yellow: "Yellow Taxi",
+      green: "Green Taxi",
+      fhv: "For-Hire Vehicle",
+      fhvhv: "High Volume FHV"
+    };
+
+    const DATASET_COLORS = {
+      yellow: "bg-amber-400",
+      green: "bg-emerald-400",
+      fhv: "bg-sky-400",
+      fhvhv: "bg-purple-400"
+    };
+
+    const modeSelect = document.getElementById("mode");
+    const datasetSelect = document.getElementById("dataset");
+    const yearSelect = document.getElementById("year");
+    const weekSelect = document.getElementById("week");
+    const loadBtn = document.getElementById("loadBtn");
+    const openBtn = document.getElementById("openBtn");
+    const pathPreview = document.getElementById("pathPreview");
+    const mapTitle = document.getElementById("mapTitle");
+    const mapSubtitle = document.getElementById("mapSubtitle");
+    const statusBadge = document.getElementById("statusBadge");
+    const mapImage = document.getElementById("mapImage");
+    const placeholder = document.getElementById("placeholder");
+    const errorBox = document.getElementById("errorBox");
+    const weekButtons = document.getElementById("weekButtons");
+    const datasetBars = document.getElementById("datasetBars");
+    const summaryRows = document.getElementById("summaryRows");
+
+    const kpiTotalTrips = document.getElementById("kpiTotalTrips");
+    const kpiDatasets = document.getElementById("kpiDatasets");
+    const kpiWeeks = document.getElementById("kpiWeeks");
+    const kpiSelectedTrips = document.getElementById("kpiSelectedTrips");
+    const kpiSelectedLabel = document.getElementById("kpiSelectedLabel");
+
+    let manifest = null;
+
+    function padWeek(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString("en-US");
+    }
+
+    function getBaseFolder() {
+      return modeSelect.value === "test" ? "../output_weekly_test" : "../output_weekly";
+    }
+
+    function getImagePath() {
+      const folder = getBaseFolder();
+      const dataset = datasetSelect.value;
+      const year = yearSelect.value;
+      const week = padWeek(weekSelect.value);
+
+      return `${folder}/${dataset}/${dataset}_year_${year}_week_${week}.png`;
+    }
+
+    function updatePathPreview() {
+      pathPreview.textContent = getImagePath();
+    }
+
+    function setStatus(text, type) {
+      statusBadge.textContent = text;
+      statusBadge.className = "self-start md:self-center text-xs px-3 py-1 rounded-full border ";
+
+      if (type === "ok") {
+        statusBadge.className += "border-emerald-700 bg-emerald-950/70 text-emerald-300";
+      } else if (type === "error") {
+        statusBadge.className += "border-red-700 bg-red-950/70 text-red-300";
+      } else {
+        statusBadge.className += "border-slate-700 bg-slate-950 text-slate-400";
+      }
+    }
+
+    async function tryLoadManifest() {
+      const possiblePaths = [
+        "../output_weekly/manifest.json",
+        "../output_weekly_test/manifest.json",
+        "manifest.json"
+      ];
+
+      for (const path of possiblePaths) {
+        try {
+          const response = await fetch(`${path}?t=${Date.now()}`);
+          if (response.ok) {
+            manifest = await response.json();
+            return;
+          }
+        } catch (err) {
+          // Si no existe o no se puede leer, se ignora.
+        }
+      }
+    }
+
+    function getCurrentManifestItem() {
+      if (!manifest || !manifest.items) return null;
+
+      const dataset = datasetSelect.value;
+      const year = Number(yearSelect.value);
+      const week = Number(weekSelect.value);
+
+      return manifest.items.find(item =>
+        item.dataset === dataset &&
+        Number(item.year) === year &&
+        Number(item.week) === week
+      );
+    }
+
+    function getDatasetTotals() {
+      const totals = {
+        yellow: 0,
+        green: 0,
+        fhv: 0,
+        fhvhv: 0
+      };
+
+      if (manifest && manifest.items) {
+        manifest.items.forEach(item => {
+          if (totals[item.dataset] !== undefined) {
+            totals[item.dataset] += Number(item.trip_count || 0);
+          }
+        });
+      }
+
+      return totals;
+    }
+
+    function renderDashboardStats() {
+      const totals = getDatasetTotals();
+      const totalTrips = Object.values(totals).reduce((a, b) => a + b, 0);
+      const activeDatasets = Object.values(totals).filter(v => v > 0).length || 4;
+
+      let weekCount = 53;
+      if (manifest && manifest.items) {
+        const uniqueWeeks = new Set(manifest.items.map(i => `${i.year}-${i.week}`));
+        weekCount = uniqueWeeks.size;
+      }
+
+      kpiTotalTrips.textContent = totalTrips > 0 ? formatNumber(totalTrips) : "—";
+      kpiDatasets.textContent = String(activeDatasets);
+      kpiWeeks.textContent = String(weekCount);
+
+      const max = Math.max(...Object.values(totals), 1);
+
+      datasetBars.innerHTML = Object.entries(totals).map(([dataset, value]) => {
+        const pct = max > 0 ? (value / max) * 100 : 0;
+        const share = totalTrips > 0 ? (value / totalTrips) * 100 : 0;
+
+        return `
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="font-semibold text-white">${DATASET_NAMES[dataset]}</span>
+              <span class="text-slate-400">${value > 0 ? formatNumber(value) : "Sin manifest"}</span>
+            </div>
+            <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full ${DATASET_COLORS[dataset]} rounded-full" style="width: ${pct}%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">${totalTrips > 0 ? share.toFixed(1) + "% del total" : "Esperando manifest.json para datos reales"}</p>
+          </div>
+        `;
+      }).join("");
+
+      summaryRows.innerHTML = Object.entries(totals).map(([dataset, value]) => {
+        const share = totalTrips > 0 ? (value / totalTrips) * 100 : 0;
+        return `
+          <tr class="border-b border-slate-800/70">
+            <td class="py-2">${DATASET_NAMES[dataset]}</td>
+            <td class="py-2 text-right">${value > 0 ? formatNumber(value) : "—"}</td>
+            <td class="py-2 text-right">${totalTrips > 0 ? share.toFixed(1) + "%" : "—"}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function loadMap() {
+      const dataset = datasetSelect.value;
+      const year = yearSelect.value;
+      const week = padWeek(weekSelect.value);
+      const imagePath = getImagePath();
+
+      updatePathPreview();
+
+      mapTitle.textContent = `${DATASET_NAMES[dataset]} · Año ${year} · Semana ${week}`;
+      mapSubtitle.textContent = `Ruta: ${imagePath}`;
+
+      const manifestItem = getCurrentManifestItem();
+      if (manifestItem) {
+        kpiSelectedTrips.textContent = formatNumber(manifestItem.trip_count);
+        kpiSelectedLabel.textContent = `${DATASET_NAMES[dataset]} · Semana ${week} · Inicio ${manifestItem.week_start || "N/D"}`;
+      } else {
+        kpiSelectedTrips.textContent = "—";
+        kpiSelectedLabel.textContent = `${DATASET_NAMES[dataset]} · Semana ${week}`;
+      }
+
+      errorBox.classList.add("hidden");
+      placeholder.classList.add("hidden");
+      mapImage.classList.remove("hidden");
+
+      setStatus("Cargando...", "neutral");
+      mapImage.src = `${imagePath}?t=${Date.now()}`;
+    }
+
+    mapImage.onload = () => {
+      errorBox.classList.add("hidden");
+      setStatus("Imagen cargada", "ok");
+    };
+
+    mapImage.onerror = () => {
+      mapImage.classList.add("hidden");
+      placeholder.classList.remove("hidden");
+      errorBox.classList.remove("hidden");
+      setStatus("No encontrada", "error");
+    };
+
+    function openCurrentImage() {
+      const imagePath = getImagePath();
+      window.open(imagePath, "_blank");
+    }
+
+    function buildWeekOptions() {
+      weekSelect.innerHTML = "";
+      for (let i = 1; i <= 53; i++) {
+        const option = document.createElement("option");
+        option.value = String(i);
+        option.textContent = padWeek(i);
+        weekSelect.appendChild(option);
+      }
+      weekSelect.value = "1";
+    }
+
+    function buildWeekButtons() {
+      weekButtons.innerHTML = "";
+      for (let i = 1; i <= 53; i++) {
+        const button = document.createElement("button");
+        button.textContent = padWeek(i);
+        button.className = "px-3 py-1 rounded-lg text-xs bg-slate-800 hover:bg-amber-400 hover:text-slate-950 transition";
+        button.addEventListener("click", () => {
+          weekSelect.value = String(i);
+          loadMap();
+        });
+        weekButtons.appendChild(button);
+      }
+    }
+
+    [modeSelect, datasetSelect, yearSelect, weekSelect].forEach(element => {
+      element.addEventListener("change", () => {
+        updatePathPreview();
+        if (element !== modeSelect) {
+          loadMap();
+        }
+      });
+    });
+
+    loadBtn.addEventListener("click", loadMap);
+    openBtn.addEventListener("click", openCurrentImage);
+
+    async function init() {
+      buildWeekOptions();
+      buildWeekButtons();
+      updatePathPreview();
+
+      await tryLoadManifest();
+      renderDashboardStats();
+
+      loadMap();
+    }
+
+    init();
+  </script>
+</body>
+</html>

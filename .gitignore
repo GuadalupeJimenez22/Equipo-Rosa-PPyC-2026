@@ -1,6 +1,19 @@
+# Ignorar datos pesados y mapas generados
+**/taxi_zones/
+**/output_test/
+**/output_weekly_test/
+**/resumenes_weekly/
+**/tmp_downloads/
+
+# Ignorar entornos y dependencias locales
 .venv
 *.webp.venv/
 src/expo/data
-__pycache__
-**/__pycache__/**/temp_*.parquet
 node_modules/
+
+# Ignorar archivos del sistema y temporales
+*.DS_Store
+**/.DS_Store
+__pycache__/
+**/__pycache__/**/temp_*.parquet
+*.zip

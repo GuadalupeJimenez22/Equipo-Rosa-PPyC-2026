@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const path = require('path');
 
@@ -14,7 +15,15 @@ const pool = new Pool({
 });
 
 const app = express();
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api', apiLimiter);
 
 app.get('/api/weeks', async (req, res) => {
   const { year } = req.query;

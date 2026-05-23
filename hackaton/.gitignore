@@ -1,0 +1,16 @@
+# Ignorar carpetas de mapas y datos pesados (evita trabar Git)
+output_test/
+output_weekly/
+output_weekly_test/
+resumenes_weekly/
+taxi_zones/
+*.zip
+
+# Ignorar archivos basura del sistema Mac
+.DS_Store
+*.DS_Store
+**/ .DS_Store
+
+# Ignorar entorno virtual de Python
+.venv/
+__pycache__/
