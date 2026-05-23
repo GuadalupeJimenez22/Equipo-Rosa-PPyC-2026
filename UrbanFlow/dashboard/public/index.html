@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UrbanFlow AI - Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    #map { height: 520px; width: 100%; background: #000; }
+    .leaflet-container { background: #000; }
+    .leaflet-popup-content-wrapper { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+    .leaflet-popup-tip { background: #1e293b; }
+    .legend { background: #1e293b; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; font-size: 12px; color: #e2e8f0; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased">
+  <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-11 w-11 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xl">🚖</div>
+        <div>
+          <h1 class="text-2xl font-black tracking-tight text-white">UrbanFlow AI</h1>
+          <p class="text-sm text-slate-400">Dashboard interactivo desde PostgreSQL</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs text-slate-400">
+        <span class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800" id="badgeZones">Zonas: --</span>
+        <span class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800" id="badgeTrips">Viajes: --</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <aside class="lg:col-span-1 bg-slate-900/70 border border-slate-800 rounded-2xl p-5 h-fit space-y-5">
+        <div>
+          <h2 class="text-lg font-bold text-white">Filtros</h2>
+          <p class="text-sm text-slate-400 mt-1">Selecciona año, semana y hora para visualizar.</p>
+        </div>
+
+        <div class="space-y-2">
+          <label for="dataset" class="text-sm font-semibold text-slate-300">Tipo de transporte</label>
+          <select id="dataset" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <option value="yellow">Yellow Taxi</option>
+            <option value="green">Green Taxi</option>
+            <option value="fhv">For-Hire Vehicle</option>
+            <option value="fhvhv">High Volume FHV</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-2">
+            <label for="year" class="text-sm font-semibold text-slate-300">Año</label>
+            <select id="year" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label for="week" class="text-sm font-semibold text-slate-300">Semana</label>
+            <select id="week" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm"></select>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label for="hour" class="text-sm font-semibold text-slate-300">Hora (opcional)</label>
+          <select id="hour" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <button id="loadBtn" class="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg px-4 py-2 transition">
+          Cargar mapa
+        </button>
+
+        <div class="border-t border-slate-800 pt-4 space-y-2">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Leyenda</p>
+          <div id="legend" class="text-xs text-slate-400 space-y-1">
+            <p>Menos viajes <span class="text-amber-900">⬤</span> → <span class="text-amber-300">⬤</span> Más viajes</p>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-400 leading-relaxed">
+          <strong class="text-slate-200">API:</strong> Los datos se sirven desde Express + PostgreSQL.
+        </div>
+      </aside>
+
+      <section class="lg:col-span-3 space-y-5">
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h2 id="mapTitle" class="text-xl font-black text-white">Mapa de calor</h2>
+              <p id="mapSubtitle" class="text-sm text-slate-400 mt-1">Selecciona filtros y presiona Cargar</p>
+            </div>
+            <span id="statusBadge" class="self-start md:self-center text-xs px-3 py-1 rounded-full border border-slate-700 bg-slate-950 text-slate-400">
+              Sin datos
+            </span>
+          </div>
+          <div id="map"></div>
+        </div>
+
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+          <h3 class="text-lg font-bold text-white">Viajes por hora</h3>
+          <p class="text-sm text-slate-400 mt-1">Distribución semanal.</p>
+          <canvas id="hourChart" class="mt-4 max-h-64"></canvas>
+        </div>
+
+        <div id="summaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+            <p class="text-xs text-slate-500 font-bold uppercase">Manhattan</p>
+            <p class="text-xl font-black text-white mt-1" id="sum-manhattan">--</p>
+          </div>
+          <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+            <p class="text-xs text-slate-500 font-bold uppercase">Brooklyn</p>
+            <p class="text-xl font-black text-white mt-1" id="sum-brooklyn">--</p>
+          </div>
+          <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+            <p class="text-xs text-slate-500 font-bold uppercase">Queens</p>
+            <p class="text-xl font-black text-white mt-1" id="sum-queens">--</p>
+          </div>
+          <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+            <p class="text-xs text-slate-500 font-bold uppercase">Bronx</p>
+            <p class="text-xl font-black text-white mt-1" id="sum-bronx">--</p>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+    UrbanFlow AI · Dashboard con Express + Leaflet + Chart.js
+  </footer>
+
+  <script>
+    const API = '';
+    let map, choropleth, hourChart;
+
+    function initMap() {
+      map = L.map('map').setView([40.7128, -74.006], 11);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+      }).addTo(map);
+
+      fetch(`${API}/api/zones/geojson?year=2024&week=1`)
+        .then(r => r.json())
+        .then(data => {
+          const values = data.features.map(f => f.properties.trip_count);
+          const maxVal = Math.max(...values, 1);
+          choropleth = L.geoJSON(data, {
+            style: feature => ({
+              fillColor: getColor(feature.properties.trip_count, maxVal),
+              weight: 1,
+              opacity: 0.6,
+              color: '#334155',
+              fillOpacity: 0.8,
+            }),
+            onEachFeature: (feature, layer) => {
+              layer.bindPopup(`
+                <b>${feature.properties.zone}</b><br/>
+                Borough: ${feature.properties.borough}<br/>
+                Viajes: <b>${feature.properties.trip_count.toLocaleString()}</b>
+              `);
+            }
+          }).addTo(map);
+        });
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('hourChart').getContext('2d');
+      hourChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+          datasets: [{
+            label: 'Viajes',
+            data: Array(24).fill(0),
+            backgroundColor: '#f59e0b',
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', maxRotation: 0, font: { size: 10 } }, grid: { color: '#1e293b' } },
+            y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function setStatus(text, type) {
+      const badge = document.getElementById('statusBadge');
+      badge.textContent = text;
+      badge.className = 'self-start md:self-center text-xs px-3 py-1 rounded-full border ';
+      if (type === 'ok') badge.className += 'border-emerald-700 bg-emerald-950/70 text-emerald-300';
+      else if (type === 'error') badge.className += 'border-red-700 bg-red-950/70 text-red-300';
+      else badge.className += 'border-slate-700 bg-slate-950 text-slate-400';
+    }
+
+    function getColor(value, max) {
+      if (max === 0) return '#1a1a2e';
+      const ratio = value / max;
+      if (ratio > 0.75) return '#f5c518';
+      if (ratio > 0.5) return '#e94560';
+      if (ratio > 0.25) return '#0f3460';
+      return '#1a1a2e';
+    }
+
+    async function loadMap() {
+      const year = document.getElementById('year').value;
+      const week = document.getElementById('week').value;
+      const hour = document.getElementById('hour').value;
+
+      document.getElementById('mapTitle').textContent = `Mapa de calor · ${year} · Semana ${week}`;
+      setStatus('Cargando...', 'neutral');
+
+      try {
+        const params = new URLSearchParams({ year, week });
+        if (hour) params.append('hour', hour);
+
+        const [geoRes, sumRes, hourRes] = await Promise.all([
+          fetch(`${API}/api/zones/geojson?${params}`),
+          fetch(`${API}/api/summary?${params}`),
+          fetch(`${API}/api/stats-by-hour?${params}`)
+        ]);
+
+        const geojson = await geoRes.json();
+        const summary = await sumRes.json();
+        const hours = await hourRes.json();
+
+        if (choropleth) map.removeLayer(choropleth);
+
+        const values = geojson.features.map(f => f.properties.trip_count);
+        const maxVal = Math.max(...values, 1);
+
+        choropleth = L.geoJSON(geojson, {
+          style: feature => ({
+            fillColor: getColor(feature.properties.trip_count, maxVal),
+            weight: 1,
+            opacity: 0.6,
+            color: '#334155',
+            fillOpacity: 0.8,
+          }),
+          onEachFeature: (feature, layer) => {
+            layer.bindPopup(`
+              <b>${feature.properties.zone}</b><br/>
+              Borough: ${feature.properties.borough}<br/>
+              Viajes: <b>${feature.properties.trip_count.toLocaleString()}</b>
+            `);
+          }
+        }).addTo(map);
+
+        const totalTrips = values.reduce((a, b) => a + b, 0);
+        const zoneCount = geojson.features.length;
+        document.getElementById('badgeZones').textContent = `Zonas: ${zoneCount}`;
+        document.getElementById('badgeTrips').textContent = `Viajes: ${(totalTrips / 1000).toFixed(0)}k`;
+
+        summary.forEach(s => {
+          const el = document.getElementById(`sum-${s.borough.toLowerCase()}`);
+          if (el) el.textContent = (s.total / 1000).toFixed(0) + 'k';
+        });
+
+        const hourData = Array(24).fill(0);
+        hours.forEach(h => { if (h.hour >= 0 && h.hour <= 23) hourData[h.hour] = h.total; });
+        hourChart.data.datasets[0].data = hourData;
+        hourChart.update();
+
+        document.getElementById('mapSubtitle').textContent =
+          `${zoneCount} zonas · ${totalTrips.toLocaleString()} viajes`;
+        setStatus('Datos cargados', 'ok');
+      } catch (err) {
+        setStatus('Error', 'error');
+        console.error(err);
+      }
+    }
+
+    function initFilters() {
+      const yearSel = document.getElementById('year');
+      const weekSel = document.getElementById('week');
+      const hourSel = document.getElementById('hour');
+
+      for (let i = 0; i <= 23; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${String(i).padStart(2, '0')}:00`;
+        hourSel.appendChild(opt);
+      }
+
+      function loadWeeks() {
+        const year = yearSel.value;
+        fetch(`${API}/api/weeks?year=${year}`)
+          .then(r => r.json())
+          .then(data => {
+            weekSel.innerHTML = '';
+            const seen = new Set();
+            data.forEach(w => {
+              const key = `${w.year}-${String(w.week).padStart(2, '0')}`;
+              if (seen.has(key)) return;
+              seen.add(key);
+              const opt = document.createElement('option');
+              opt.value = w.week;
+              opt.textContent = `Sem ${String(w.week).padStart(2, '0')} (${w.year})`;
+              weekSel.appendChild(opt);
+            });
+          });
+      }
+
+      yearSel.addEventListener('change', loadWeeks);
+      document.getElementById('loadBtn').addEventListener('click', loadMap);
+      loadWeeks();
+
+      document.getElementById('year').value = '2024';
+    }
+
+    initMap();
+    initChart();
+    initFilters();
+  </script>
+</body>
+</html>

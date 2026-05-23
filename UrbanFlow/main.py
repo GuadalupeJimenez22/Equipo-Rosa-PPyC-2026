@@ -30,10 +30,14 @@ def get_connection():
 # ==========================================
 def cargar_zonas(engine):
     print("🗺️ Cargando zonas en la base de datos...")
+    with engine.begin() as conn:
+        conn.execute(text("TRUNCATE TABLE urbanflow.zones_geometry RESTART IDENTITY CASCADE"))
+        conn.execute(text("TRUNCATE TABLE urbanflow.zones RESTART IDENTITY CASCADE"))
     try:
         df_lookup = pd.read_csv(
             "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
         )
+        df_lookup.columns = [c.lower() for c in df_lookup.columns]
         df_lookup.to_sql('zones', engine, schema='urbanflow',
                          if_exists='append', index=False, method='multi')
         print(f"✅ {len(df_lookup)} zonas insertadas en zones")
@@ -62,6 +66,9 @@ def cargar_zonas(engine):
 # ==========================================
 def cargar_calendario(engine):
     print("📅 Cargando calendario en la base de datos...")
+    with engine.begin() as conn:
+        conn.execute(text("TRUNCATE TABLE urbanflow.trip_statistics RESTART IDENTITY CASCADE"))
+        conn.execute(text("TRUNCATE TABLE urbanflow.calendar RESTART IDENTITY CASCADE"))
     registros = []
     for anio in [2024, 2025]:
         d = date(anio, 1, 1)
