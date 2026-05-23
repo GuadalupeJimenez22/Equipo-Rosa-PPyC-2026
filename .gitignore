@@ -1,4 +1,12 @@
-.venv
-*.webp.venv/
-src/expo/data
-__pycache__
+# Ignorar datos pesados y mapas generados
+**/taxi_zones/
+**/output_test/
+**/output_weekly_test/
+**/resumenes_weekly/
+**/tmp_downloads/
+
+# Ignorar archivos del sistema y temporales
+*.DS_Store
+**/.DS_Store
+__pycache__/
+*.zip
